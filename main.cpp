@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <chrono>
 
 using namespace std;
 
 #define MAX_THREADS 16
+
+double  dataArray[16];
 
 void* function_id(void* param);
 void* function_iter(void* param);
@@ -17,6 +20,51 @@ int main(){
     cout << "ENTER AMMOUNT OF THREADS : ";
     cin >> amm;
 
+    int choise;
+    std::cout<<"\nENTER TYPE OF OPERATION (1-iter | 0-id) : ";
+    std::cin>>choise;
+
+    if(choise == 1){
+        std::cout << "ENTER STEP VALUE : ";
+        double left = -0.9, right = -0.9 + (1.8 / amm), step;
+        std::cin >> step;
+
+        for (int i = 0; i < amm; i++)
+        {
+            
+            dataArray[0] = step;
+            dataArray[1] = left;
+            dataArray[2] = right;
+
+            pthread_create(&threads[i], NULL, function_iter, &dataArray);
+
+            left = left + (1.8 / amm);
+            right = right + (1.8 / amm);
+        }
+    }else if (choise == 0){
+        std::cout << "ENTER STEP VALUE : ";
+        int cycles;
+        std::cin>>cycles;
+
+        cycles = (int)(cycles/amm);
+        for (int i = 0; i < amm; i++)
+        {
+            pthread_create(&threads[i], NULL, function_id, &cycles);
+        }
+    }
+    
+    
+ 
+    chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    for (int i = 0; i < amm; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+    chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    
+
+    cout<<"\n\nTIME : "<< chrono::duration_cast<chrono::seconds>(end - begin).count()<<" seconds"<<endl;
+    return 0;
 }
 
 void* function_iter(void* param)
