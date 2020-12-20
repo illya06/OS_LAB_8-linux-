@@ -5,6 +5,7 @@
 #include <chrono>
 #include <sys/types.h>
 #include <unistd.h>
+#include <semaphore.h> 
 
 using namespace std;
 
@@ -14,6 +15,7 @@ double  dataArray[16];
 
 //syncing
 pthread_mutex_t lock;
+sem_t semaphore;
 
 //variable for syncing
 int    progres = 0;
@@ -38,6 +40,9 @@ int main(){
         printf("\n mutex init has failed\n"); 
         return 1; 
     } 
+
+    //creating semaphore
+    sem_init(&semaphore, 0, 1); 
 
     if(choise == 1){
         std::cout << " Enter step value : ";
@@ -65,6 +70,8 @@ int main(){
         int cycles;
         std::cin>>cycles;
 
+        ammForProgress = (double)cycles;
+
         cycles = (int)(cycles/amm);
         for (int i = 0; i < amm; i++)
         {
@@ -83,6 +90,7 @@ int main(){
     
 
     cout<<"\n\nTIME : "<< chrono::duration_cast<chrono::seconds>(end - begin).count()<<" seconds"<<endl;
+    sem_destroy(&semaphore);
     return 0;
 }
 
@@ -113,7 +121,12 @@ void* function_id(void* param)
 {
     int iter = *(int*)param;
     for (int i = 0; i < iter; i++) {
-        printf("\n \033[36m %ld\033[0m -> Shevchuk Ilya #1245123451 ",gettid());
+        sem_wait(&semaphore);
+            progres++;
+            double percent = progres * (100.0 / (double)ammForProgress);
+            cout << "\n" << percent << "% | ";
+            printf("\033[36m %ld\033[0m -> Shevchuk Ilya #1245123451 ",gettid());
+        sem_post(&semaphore);
     }
     printf("\n\n (\033[32m%ld\033[0m) FINISHED!\n", gettid());
     return 0;

@@ -1,4 +1,4 @@
-FLAGS = -pthread -fpermissive -Wint-to-pointer-cast
+FLAGS = -pthread -fpermissive -Wint-to-pointer-cast -lpthread -lrt
 
 myapp: main.o
 	g++ main.o $(FLAGS) -o myapp
