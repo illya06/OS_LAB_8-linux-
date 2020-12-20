@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
@@ -12,7 +13,12 @@ void* function_iter(void* param);
 pthread_t threads[MAX_THREADS];
 
 int main(){
+    int amm;
+    cout << "ENTER AMMOUNT OF THREADS : ";
+    cin >> amm;
 
+    for(int i=0;i<amm;i++)
+        pthread_attr_init(&attrs[i]);
 }
 
 void* function_iter(void* param)
