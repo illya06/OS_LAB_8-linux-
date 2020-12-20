@@ -12,6 +12,13 @@ using namespace std;
 
 double  dataArray[16];
 
+//syncing
+pthread_mutex_t lock;
+
+//variable for syncing
+int    progres = 0;
+double ammForProgress = 0;
+
 void* function_id(void* param);
 void* function_iter(void* param);
 
@@ -26,10 +33,20 @@ int main(){
     std::cout<<"\nENTER TYPE OF OPERATION (1-iter | 0-id) : ";
     std::cin>>choise;
 
+    //creating mutex
+    if (pthread_mutex_init(&lock, NULL) != 0) { 
+        printf("\n mutex init has failed\n"); 
+        return 1; 
+    } 
+
     if(choise == 1){
         std::cout << " Enter step value : ";
         double left = -0.9, right = -0.9 + (1.8 / amm), step;
         std::cin >> step;
+
+        for (double i = left; i <= 0.9; i += step) {
+            ammForProgress+=1.0;
+        }
 
         for (int i = 0; i < amm; i++)
         {
@@ -71,14 +88,20 @@ int main(){
 
 void* function_iter(void* param)
 {
+
     double* arr = (double*)param;
     double step = arr[0], left = arr[1], right = arr[2];
     printf("\n (\033[32m%ld\033[0m) FUNCTION PARAMETERS: \n  step  :\033[33m %+.4f \033[0m \n  left  :\033[33m %+.4f \033[0m  \n  right :\033[33m %+.4f \033[0m\n", gettid(), step, left, right);
     double x;
     
     for (double i = left; i < right; i += step) {
-        x = 1 + i / 3 - i * i / 9 + i * i * i * 5 / 81 - i * i * i * i * 80 / 1944;
-        printf("\n \033[36m %ld\033[0m -> X: %+.4f | Y: %+.4f ",gettid(), i, x);
+        pthread_mutex_lock(&lock);
+            progres++;
+            double percent = progres * 100 / ammForProgress;
+            cout << "\n" << percent << "% | ";
+            x = 1 + i / 3 - i * i / 9 + i * i * i * 5 / 81 - i * i * i * i * 80 / 1944;
+            printf("\033[36m %ld\033[0m -> X: %+.4f | Y: %+.4f ",gettid(), i, x);
+        pthread_mutex_unlock(&lock);
     }
     printf("\n\n (\033[32m%ld\033[0m) FINISHED!\n", gettid());
     return 0;
