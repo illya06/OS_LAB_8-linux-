@@ -17,8 +17,6 @@ int main(){
     cout << "ENTER AMMOUNT OF THREADS : ";
     cin >> amm;
 
-    for(int i=0;i<amm;i++)
-        pthread_attr_init(&attrs[i]);
 }
 
 void* function_iter(void* param)
